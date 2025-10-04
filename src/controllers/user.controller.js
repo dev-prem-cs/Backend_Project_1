@@ -81,5 +81,56 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new apiResponse(201, createdUser, "User registered successfully"));
 });
 
-export { registerUser };
+// login controller
+
+const loginUser = asyncHandler(async (req, res) => {
+    //1. req body-> data
+    const { username, email, password } = req.body;
+    //2. validate data
+    if (!(username || email) || !password) {
+        throw new ApiError(400, "Username or email and password are required");
+    }
+    //3. username or email
+    //4. find the user
+    const user = await User.findOne({
+        $or: [ { username: username?.toLowerCase() },
+            { email: email?.toLowerCase() }],
+    });
+    if (!user) {
+        throw new ApiError(404, "User not found, please register");
+    }
+
+   
+    
+    //check password using method in user model
+    const isAuthenticated = await user.isPasswordCorrect(password);
+
+    if (!isAuthenticated){
+        throw new ApiError(
+            401,
+            "Invalid user credentials"
+        );
+    };
+
+    const loggedInUser = await User.findById(user._id).select(
+        "-password -refreshToken"
+    );
+    //access and refreshtoken
+
+    const { accessToken, refreshToken } = await tokenGenerator(user._id);
+    const options = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+    };
+    //send cookies
+    res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(new apiResponse(200, loggedInUser, "User logged in successfully"));
+});
+
+
+
+export { registerUser , loginUser};
   

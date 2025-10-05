@@ -103,7 +103,7 @@ const loginUser = asyncHandler(async (req, res) => {
    
     
     //check password using method in user model
-    const isAuthenticated = await user.isPasswordCorrect(newpassword);
+    const isAuthenticated = await user.isPasswordCorrect(password);
 
     if (!isAuthenticated){
         throw new ApiError(
@@ -131,7 +131,24 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser= asyncHandler(async (req,res) => {
-    
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set:{
+                refreshToken: undefined
+            }
+        }
+    )
+    const options = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+    };
+    return res.status(200)
+    .clearCookie("accessToken")
+    .clearCookie("refreshToken")
+    .json(new apiResponse(200,
+        "User logged out "
+    ))
 })
 
 export { registerUser , loginUser, logoutUser};

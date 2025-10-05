@@ -1,4 +1,4 @@
-import asyncHandler from "../utils/asuncHandler.js";
+import asyncHandler from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
 import { uploadToCloudinary } from "../utils/cloudinary.js";
@@ -103,7 +103,7 @@ const loginUser = asyncHandler(async (req, res) => {
    
     
     //check password using method in user model
-    const isAuthenticated = await user.isPasswordCorrect(password);
+    const isAuthenticated = await user.isPasswordCorrect(newpassword);
 
     if (!isAuthenticated){
         throw new ApiError(
@@ -130,7 +130,9 @@ const loginUser = asyncHandler(async (req, res) => {
         .json(new apiResponse(200, loggedInUser, "User logged in successfully"));
 });
 
+const logoutUser= asyncHandler(async (req,res) => {
+    
+})
 
-
-export { registerUser , loginUser};
+export { registerUser , loginUser, logoutUser};
   

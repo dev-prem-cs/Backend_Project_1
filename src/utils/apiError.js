@@ -21,4 +21,7 @@ class ApiError extends Error {
     }
 }
 
+// const err = new ApiError(404, "Not found")
+// console.log(err);
+
 export {ApiError}

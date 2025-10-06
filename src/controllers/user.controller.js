@@ -146,48 +146,78 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incommingRefToken = req.cookies?.refreshToken || req.body?.refreshToken;
- // console.log(incommingRefToken)
+  // console.log(incommingRefToken)
   if (!incommingRefToken) {
     throw new ApiError(401, "unauthorised request");
   }
 
-  const decodedRefToken=JWT.verify(incommingRefToken,process.env.REFRESH_TOKEN_SECRET);
+  const decodedRefToken = JWT.verify(
+    incommingRefToken,
+    process.env.REFRESH_TOKEN_SECRET
+  );
 
-  const user=await User.findById(decodedRefToken?.id);
+  const user = await User.findById(decodedRefToken?.id);
 
-   if (!user) {
+  if (!user) {
     throw new ApiError(401, "invalid refresh token");
   }
 
-  if (user?.refreshToken !== incommingRefToken){
-    throw new ApiError(
-        401,
-        "Refresh token is expired or used"
-    )
+  if (user?.refreshToken !== incommingRefToken) {
+    throw new ApiError(401, "Refresh token is expired or used");
   }
 
-  const {accessToken,newrefreshToken}= await tokenGenerator(user._id);
+  const { accessToken, newrefreshToken } = await tokenGenerator(user._id);
 
-  const options={
-    httpOnly:true,
-    secure:true
-  }
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
 
   return res
-  .status(200)
-  .cookie("accessToken",accessToken,options)
-  .cookie("refreshToken",newrefreshToken,options).json(
-    new apiResponse(
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", newrefreshToken, options)
+    .json(
+      new apiResponse(
         200,
         {
-            accessToken,refreshToken :newrefreshToken
+          accessToken,
+          refreshToken: newrefreshToken,
         },
         "access token refreshed"
-    )
-  )
-
-
-
+      )
+    );
 });
 
-export { registerUser, loginUser, logoutUser ,refreshAccessToken };
+const changeCurrentPassword=asyncHandler(async (req,res) => {
+        const {oldPassword,newPassword}=req.body;
+        if (!oldPassword || !newPassword){
+          throw new ApiError(
+            400,
+            "all fields are required"
+          )
+        }   
+        //validate old password
+        const user=await User.findById(req.user.id).select("+password");
+        const isPassMatch=await user.isPasswordCorrect(oldPassword);
+        if (!isPassMatch){
+          throw new ApiError(
+            401,
+            "incorrect old password"
+          )
+        }
+        //store new password in db
+        user.password=newPassword;
+        await user.save({
+          validateBeforeSave:false
+        })
+        return res
+        .status(200)
+        .json(
+          new apiResponse(200,
+            "","password updated successfully"
+          )
+        )
+})
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken ,changeCurrentPassword};

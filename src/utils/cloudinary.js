@@ -20,10 +20,24 @@ export const uploadToCloudinary= async (filePath,folder)=>{
     }
 } 
 
-export const deleteFromCloudinary= async (publicId)=>{
+
+// Add a function to delete files
+export const deleteFromCloudinary = async (publicId) => {
     try {
-        await cloudinary.uploader.destroy(publicId);
+        if (!publicId) return null;
+        const result = await cloudinary.uploader.destroy(publicId);
+        return result;
     } catch (error) {
-        throw new Error("Cloudinary delete failed");
+        // Handle or log the error
+        return null;
     }
-}
+};
+
+// Helper to extract public ID
+export const getPublicIdFromUrl = (url) => {
+    if (!url) return null;
+    const parts = url.split("/");
+    const publicIdWithExtension = parts[parts.length - 1];
+    const publicId = publicIdWithExtension.split(".")[0];
+    return publicId;
+};

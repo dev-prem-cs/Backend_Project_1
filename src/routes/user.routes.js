@@ -23,4 +23,7 @@ userRouter.post("/logout",verifyJWT,logoutUser)
 userRouter.post("/refresh-token",refreshAccessToken)
 userRouter.post("/changePassword",verifyJWT,changeCurrentPassword)
 userRouter.get("/info",verifyJWT,getCurrentUser)
+
+// testting pending
 userRouter.post("/update",verifyJWT,updateAccountDetails)
+

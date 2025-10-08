@@ -306,6 +306,80 @@ const updateUserCoverImage = (req, res) => {
   );
 };
 
+const getUserChannelProfile=asyncHandler(async (req,res) => {
+      const {userName}=req.params;
+      if (!userName?.trim){
+        throw new ApiError(
+          400,"username is missing"
+        )
+      }
+
+      const channel=await User.aggregate([
+        {
+          $match:{
+            userName:userName?.toLowerCase()
+          }
+
+        },{
+          $lookup:{
+            from:"subscriptions",
+            localField:"_id",
+            foreignField:"channel",
+            as:"Subscribers"
+          }
+        },{
+          $lookup:{
+            from:"subscriptions",
+            localField:"_id",
+            foreignField:"subscriber",
+            as:"subscribedTo"
+          }
+        },{
+          $addFields:{
+            subscribersCount:{
+              $size:"$subscribers"
+            },
+            ChannelsSubscribedtoCount:{
+              $size:"$subscribedTo"
+            },
+            isSubscribed:{
+              $cond:{
+                if:{$in :[req.user?.id,"$subscribers"]},
+                then: true,
+                else:false
+
+              }
+            }
+          }
+        },{
+          $project:{
+            fullName:1,
+            userName:1,
+            subscribersCount:1,
+            ChannelsSubscribedtoCount:1,
+            isSubscribed:1,
+            avatar:1,
+            coverImage:1,
+            email:1
+        }
+}])
+    // console.log(channel);
+      if(!channel?.length){
+        throw new ApiError(404,
+          "channel does not exists"
+        )
+      }
+return res.
+      status(200). 
+      json(new apiResponse(
+        200,channel[0],"channel info fetched"
+      ))
+
+})
+
+
+
+
 export {
   registerUser,
   loginUser,
@@ -316,4 +390,6 @@ export {
   updateAccountDetails,
   updateUserAvatar,
   updateUserCoverImage,
+  getUserChannelProfile,
 };
+

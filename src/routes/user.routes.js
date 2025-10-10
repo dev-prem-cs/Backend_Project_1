@@ -29,5 +29,5 @@ userRouter.post("/update-coverImage",verifyJWT,upload.single("coverImage"),updat
 
 // pending testing  
 
-userRouter.get("/ch/:username",verifyJWT,getUserChannelProfile)
+userRouter.get("/ch/:userName",verifyJWT,getUserChannelProfile)
 userRouter.get("/history",verifyJWT,getUserChannelProfile)

@@ -345,7 +345,7 @@ const getUserChannelProfile=asyncHandler(async (req,res) => {
             },
             isSubscribed:{
               $cond:{
-                if:{$in :[req.user?.id,"$subscribers"]},
+                if:{$in :[req.user?.id,"$subscribers.subscriber"]},
                 then: true,
                 else:false
 
@@ -364,7 +364,7 @@ const getUserChannelProfile=asyncHandler(async (req,res) => {
             email:1
         }
 }])
-    // console.log(channel);
+    console.log(channel);
       if(!channel?.length){
         throw new ApiError(404,
           "channel does not exists"
